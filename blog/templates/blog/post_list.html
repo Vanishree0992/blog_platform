@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blog Platform</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+
+<div class="container">
+    <h1 class="mb-4">Blog Posts</h1>
+
+    <form method="get" class="row mb-4">
+        <div class="col-md-4">
+            <input type="text" name="q" class="form-control" placeholder="Search..." value="{{ query }}">
+        </div>
+        <div class="col-md-4">
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.name }}" {% if selected_category == cat.name %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+
+    {% for post in posts %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4>{{ post.title }}</h4>
+                <p>{{ post.content|truncatewords:30 }}</p>
+                <span class="badge bg-secondary">{{ post.category.name }}</span>
+                <small class="text-muted float-end">{{ post.published_date|date:"F j, Y" }}</small>
+            </div>
+        </div>
+    {% empty %}
+        <p>No posts found.</p>
+    {% endfor %}
+
+    <!-- Pagination with preserved query params -->
+    <nav>
+        <ul class="pagination">
+            {% if posts.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&category={{ selected_category }}&page={{ posts.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+
+            {% for num in posts.paginator.page_range %}
+                {% if posts.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > posts.number|add:'-3' and num < posts.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?q={{ query }}&category={{ selected_category }}&page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if posts.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&category={{ selected_category }}&page={{ posts.next_page_number }}">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+</body>
+</html>
